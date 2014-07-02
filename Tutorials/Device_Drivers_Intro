@@ -1,0 +1,58 @@
+Device Drivers
+==============
+
+Device drivers are the layer between the application and the actual hardware device, The priviliged role of the device driver allows the developer to decide how the devics should appear to the application developer.
+
+Linux Classifies the drivers into different types, Char drivers, block drivers and network drivers, the drivers are another form of module so they are also known as char module, block module or the network module.
+Many different types of drivers can be implemented in a single driver but the decomposition of tasks is important for scalability and modularity.
+
+Character Devices:
+^^^^^^^^^^^^^^^^^
+ A device that can be accesed as a stream of bytes. The driver is in charge of implementing this behaviour.
+The difference between a normal file and a char file is that you can always move back in a normal file but the same cannot be said about the cahr drivers, we cannot move back in the char driver.
+
+Block devices:
+^^^^^^^^^^^^^^
+A block device is a device that can host a filesystem. a block device can handle IO operations in terms  of blocks where each block is 512bytes or higher. 
+Linux allows reading of a block device serially thus makeing the difference between a char device and a block device very small, the main difference though is how
+the data is managed internally.
+
+
+Network Devices:
+^^^^^^^^^^^^^^^^
+Network device are a different thing altogether, the network devices are not serial devices and hence can be put up as a serial console, neither is it a block device so it cannot be mapped to a filesystem or host one.  
+so the linux kernel provides the network interfaces as a special name that has no entry in the file system. also the communication between the kernel and network devices is completely different. instead of read write the kernel talks to these devices in terms of packets.
+
+ 
+some devices do not fit into this cateogary and are implemented in some hybrid fashion. like the USB driver which can be both a serial and a block device. these devices are added in a new class of devices by combining the different features of these devices in ine particular set.
+
+Device drivers can be both hardware and software. fot the hardware we have the serial device, the USB device while in the software region we have the Filesystem and the Loopback device among others. The software device drivers map the low level data structures to a high level data structures.
+
+The filesystem driver determines, how long the filename should be and what should e the permissions on that file and what information about each file needs to be stored in the data structure. The filesystem module must implement the lowest level of system calls taht access directories and files by mapping the filename and path.
+Driver writers should avoid encoding security policy in the drivers as it is best left to the higher layers.
+
+Device driver coding is done in C and should be carefully done as the langugae does not check for buffer overruns and other form of errors which need to be verified by the programmer. Any input received from the user shall be treated with great caution and any kernel mmeory that is to be used shall always be initialized to zero before being provided to the user space process, this is to avoaid the possible leakage of data.
+
+If the device driver interprets data that is being recieved to a command, make sure that the command cannot be misused. also make sure that hardware related and other critical tasks are only requested by the roor and these actions are not avialable for the other user groups.
+
+also note that the Linux kernel can be compiled to have no module support whatsoever and the fianl image will hava all the modules built in, this is a security feature to avoid hacking of production kernels that have been verified and tested.
+
+
+Device drivers are not application programs, an application program has a main() function that is invoked by the operating system and other functions are called as per the events, the execution is not event based in most cases, but in case of device drivers we have the routines exported as symbols and the same are invoked as per the event, these are registered routines that fullfill a particular requirement. Kernel Modules register functions for future invokations.
+
+Everything required by the kernel or its module shall be available within the kernel tree, it cannot lkink to external libraries as dynamic linking is not possible, the code has to be compiled into one big binary blob. A module can only cal functions that are exported by the kernel, no other symbols are accesible to it.
+A good example can be the printk function that is the kernel version of the printf function and publishes the output to the kernel buffer and not to the screen.  
+
+each kernel module has an initialization function whose job isto register the functions for future invocations.
+
+One more difference between the kernel module and the application is that a application does not release the memory and allocated resources once it has terminated, garbage collection and releasing of resources must be done by the operating system, in case of kernel modules the module must release all its resources otherwise they will remain unusable until a system reboot.
+
+as we cannot  link to external libraries we need to use the headers defined within thekernel source.
+a segmentation fault may kill the aplication but a faulty memory access in the kernel space will cause a system crash.
+
+The job of the OS is to provide programs with a consistent view of the hardware and at the same time must account for the independent operation of the programs and protect against unauthorized access to the hardware.
+
+UNIX transfers execution from user space to kernel space whenever an application issues a system call od is suspended by an hardware interrupt. Kernel code executing a system call is working on the context of the process while the interrupts are totally asynchronous to the execution order and do not act under commands of calls from any particular process, they are event based.
+
+after version 2.6 even kernel level code was made preemptable and this causes concurrency issues, the driver must be able to handle that concurrency as now the concurrency can occur even in the kernel space code. 
+Data structures must be carefully designed and must take into consideration multiple thread of executions and shared data must be designed to handle multiple access.
