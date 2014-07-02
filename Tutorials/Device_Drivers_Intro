@@ -56,3 +56,8 @@ UNIX transfers execution from user space to kernel space whenever an application
 
 after version 2.6 even kernel level code was made preemptable and this causes concurrency issues, the driver must be able to handle that concurrency as now the concurrency can occur even in the kernel space code. 
 Data structures must be carefully designed and must take into consideration multiple thread of executions and shared data must be designed to handle multiple access.
+
+Also the thing to be noted here is that the kernel module has to be compiled for every version of the kernel that it is linked to, as modules are strongly tied to the data structures and the function prototypes that are defined in a paricular kernel version.
+
+during the build one of the task is to link the module against a file called vermagic.o, this is used to match the version during module loading and if things do not match we get an error called the "Invalid module format"
+
