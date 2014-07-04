@@ -11,3 +11,5 @@ Follow the blogs here
 DooThings: http://www.internetofthings-pune.blogspot.com/
 
 12Mhz	 : http://www.12mhz.wordpress.com
+
+Typos are Deeply regretted.
